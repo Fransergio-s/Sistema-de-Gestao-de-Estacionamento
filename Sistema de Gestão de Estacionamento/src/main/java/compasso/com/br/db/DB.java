@@ -1,11 +1,10 @@
-package db;
+package compasso.com.br.db;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -18,7 +17,9 @@ public class DB {
             try {
                 Properties prop = loadProperties();
                 String url = prop.getProperty("dburl");
-                conn = DriverManager.getConnection(url,prop);
+                String user = prop.getProperty("user");
+                String password = prop.getProperty("password");
+                conn = DriverManager.getConnection(url, user, password);
             }
             catch (SQLException e) {
                 throw new DbException(e.getMessage());
@@ -40,9 +41,9 @@ public class DB {
     }
 
     private static Properties loadProperties() { //este método carrega as propriedades definidas no meu arquivo
-        try (FileInputStream fs = new FileInputStream("db.properties")){
+        try (InputStream input = DB.class.getClassLoader().getResourceAsStream("db.properties")) {
             Properties prop = new Properties();
-            prop.load(fs);
+            prop.load(input);
             return prop;
         } catch (IOException e) {
             throw new DbException(e.getMessage());

@@ -1,4 +1,4 @@
-package db;
+package compasso.com.br.db;
 
 public class DbException extends RuntimeException {
 
