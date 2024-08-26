@@ -1,5 +1,6 @@
 package compasso.com.br.model.entities;
 
+import compasso.com.br.model.entities.enums.Category;
 import compasso.com.br.model.entities.enums.Type;
 
 import java.util.Objects;
@@ -8,14 +9,16 @@ public class Vehicle {
     private int id;
     private String licensePlate;
     private Type type;
+    private Category category;
 
     public Vehicle() {
     }
 
-    public Vehicle(int id, String plate, String type) {
+    public Vehicle(int id, String plate, Type type, Category category) {
         this.id = id;
         this.licensePlate = plate;
-        this.type = Type.valueOf(type);
+        this.type = type;
+        this.category = category;
     }
 
     public int getId() {
@@ -38,16 +41,25 @@ public class Vehicle {
         return type;
     }
 
-    public void setType(String type) {
-        this.type = Type.valueOf(type);
+    public void setType(Type type) {
+        this.type = type;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
     @Override
     public String toString() {
         return "Vehicle{" +
                 "id=" + id +
-                ", plate='" + licensePlate + '\'' +
-                ", type='" + type + '\'' +
+                ", licensePlate='" + licensePlate + '\'' +
+                ", type=" + type +
+                ", category=" + category +
                 '}';
     }
 
@@ -63,4 +75,6 @@ public class Vehicle {
     public int hashCode() {
         return Objects.hashCode(id);
     }
+
+
 }

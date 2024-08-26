@@ -4,6 +4,7 @@ public enum Type {
 
     PassengerCars,
     Motorcycles,
-    DeliveryTrucks,
-    PublicServiceVehicles;
+    Trucks,
+    Ambulances,
+    PoliceCar;
 }

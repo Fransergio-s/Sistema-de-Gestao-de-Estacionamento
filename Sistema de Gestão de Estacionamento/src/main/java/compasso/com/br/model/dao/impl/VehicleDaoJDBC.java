@@ -8,7 +8,8 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import compasso.com.br.db.DB;
-import java.util.Objects;
+import compasso.com.br.model.entities.enums.Category;
+import compasso.com.br.model.entities.enums.Type;
 
 public class VehicleDaoJDBC implements VehicleDao {
 
@@ -28,13 +29,14 @@ public class VehicleDaoJDBC implements VehicleDao {
         try{
             st = conn.prepareStatement(
                     "INSERT INTO vehicle "
-                            + "(licensePlate, type) "
+                            + "(licensePlate, type, category) "
                             + "VALUES "
-                            + "(?, ?)",
+                            + "(?, ?, ?)",
                     Statement.RETURN_GENERATED_KEYS);
 
             st.setString(1, vehicle.getLicensePlate());
             st.setString(2, String.valueOf(vehicle.getType()));
+            st.setString(3, String.valueOf(vehicle.getCategory()));
 
 
             int rowsAffected = st.executeUpdate();
@@ -66,13 +68,14 @@ public class VehicleDaoJDBC implements VehicleDao {
         try {
             st = conn.prepareStatement(
                     "UPDATE vehicle "
-                            + "SET licensePlate = ?, type = ? "
+                            + "SET licensePlate = ?, type = ?, category = ? "
                             + "WHERE licensePlate = ?"
             );
 
             st.setString(1, plate.getLicensePlate());
             st.setString(2, String.valueOf(plate.getType()));
-            st.setString(3, oldLicensePlate); // Placa antiga passada como parâmetro
+            st.setString(3, String.valueOf(plate.getCategory()));
+            st.setString(4, oldLicensePlate); // Placa antiga passada como parâmetro
 
             int rowsAffected = st.executeUpdate(); // Executa a query uma única vez
             if (rowsAffected == 0) {
@@ -120,7 +123,8 @@ public class VehicleDaoJDBC implements VehicleDao {
                 Vehicle obj = new Vehicle();
                 obj.setId(rs.getInt("id"));
                 obj.setLicensePlate(rs.getString("licensePlate"));
-                obj.setType(rs.getString("type"));
+                obj.setType(Type.valueOf(rs.getString("type")));
+                obj.setCategory(Category.valueOf(rs.getString("category")));
                 return obj;
             }
             return null;
@@ -149,7 +153,8 @@ public class VehicleDaoJDBC implements VehicleDao {
                 Vehicle obj = new Vehicle();
                 obj.setId(rs.getInt("Id"));
                 obj.setLicensePlate(rs.getString("licensePlate"));
-                obj.setType(rs.getString("type"));
+                obj.setType(Type.valueOf(rs.getString("type")));
+                obj.setCategory(Category.valueOf(rs.getString("category")));
                 list.add(obj);
             }
             return list;

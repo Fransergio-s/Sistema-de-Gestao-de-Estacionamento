@@ -5,6 +5,8 @@ import compasso.com.br.db.DbException;
 import compasso.com.br.model.dao.VehicleDao;
 import compasso.com.br.model.entities.Vehicle;
 import compasso.com.br.model.dao.DaoFactory;
+import compasso.com.br.model.entities.enums.Category;
+import compasso.com.br.model.entities.enums.Type;
 
 import java.sql.Connection;
 import java.util.List;
@@ -55,9 +57,14 @@ public class Program {
                                 System.out.println("Cadastrando veiculo: ");
                                 System.out.print("Enter the vehicle license plate: ");
                                 String licensePlate = sc.nextLine();
-                                System.out.print("Enter the vehicle type \n(PassengerCars, Motorcycles, DeliveryTrucks, PublicServiceVehicles: )");
-                                String type = sc.nextLine();
-                                Vehicle vehicle = new Vehicle(1, licensePlate, type);
+                                System.out.print("Enter the vehicle type \n" +
+                                        "(PassengerCars, Motorcycles, Trucks, Ambulances, PoliceCar: )");
+                                Type type = Type.valueOf(sc.nextLine());
+                                System.out.print("Enter the vehicle category \n" +
+                                        "(MonthlyPayers, DeliveryTrucks, PublicService, Single)");
+                                Category category = Category.valueOf(sc.nextLine());
+
+                                Vehicle vehicle = new Vehicle(1, licensePlate, type, category);
                                 vehicleDao.insert(vehicle);
                                 System.out.println("Inserted! New id = " + vehicle.getId());
                                 System.out.println();
@@ -84,9 +91,14 @@ public class Program {
                                 dep.setLicensePlate(newPlate); // Atualiza a placa do objeto
 
                                 System.out.println("Enter the vehicle type \n"+
-                                        "(PassengerCars, Motorcycles, DeliveryTrucks, PublicServiceVehicles: )");
+                                        "(PassengerCars, Motorcycles, Trucks, Ambulances, PoliceCar: )");
                                 String newType = sc.next();
-                                dep.setType(newType); // Atualiza a placa do objeto
+                                dep.setType(Type.valueOf(newType)); // Atualiza a placa do objeto
+
+                                System.out.print("Enter the vehicle category \n " +
+                                        "(MonthlyPayers, DeliveryTrucks, PublicService, Single)");
+                                String newCategory = sc.next();
+                                dep.setCategory(Category.valueOf(newCategory)); // Atualiza a placa do objeto
 
                                 // Passa a placa antiga e o objeto atualizado para o método update
                                 vehicleDao.update(dep, oldPlate);
