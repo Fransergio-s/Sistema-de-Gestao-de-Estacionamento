@@ -1,4 +1,4 @@
-# Sistema-de-Gest-o-de-Estacionamento
+# Sistema-de-Gestão-de-Estacionamento
 Este projeto trata-se de uma aplicação desenvolvida na linguagem Java, com um banco de dados Mysql que visa criar um sistema que realiza conexão com o banco de dados graças a bibilioteca JDBC do Java.
 
 ## Requisitos
