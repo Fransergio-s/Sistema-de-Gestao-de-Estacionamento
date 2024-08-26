@@ -1,10 +1,9 @@
-package application;
+package compasso.com.br.application;
 
-import db.DB;
-import db.DbException;
+import compasso.com.br.db.DB;
+import compasso.com.br.db.DbException;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 
 public class Program {
     public static void main(String[] args) {
