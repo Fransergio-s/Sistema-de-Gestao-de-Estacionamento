@@ -1,8 +1,8 @@
 package compasso.com.br.model.entities.enums;
 
 public enum Category {
-    MonthlyPayers,
+    PassengerCars,
+    Motorcycles,
     DeliveryTrucks,
-    PublicService,
-    Single;
+    PublicServiceVehicles;
 }

@@ -1,88 +1,70 @@
 package compasso.com.br.model.dao.impl;
 
 import compasso.com.br.db.DbException;
-import compasso.com.br.model.dao.VehicleDao;
+import compasso.com.br.db.DB;
 import compasso.com.br.model.entities.Vehicle;
+import compasso.com.br.model.entities.enums.Category;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import compasso.com.br.db.DB;
-import compasso.com.br.model.entities.enums.Category;
-import compasso.com.br.model.entities.enums.Type;
 
-public class VehicleDaoJDBC implements VehicleDao {
+public class VehicleDaoJDBC implements compasso.com.br.model.dao.VehicleDao {
 
-    // variável que permitirá todas as funções sincarem com bd
     private Connection conn;
 
-    // faz conexão com o banco
     public VehicleDaoJDBC(Connection conn) {
         this.conn = conn;
     }
 
     @Override
     public void insert(Vehicle vehicle) {
-
         PreparedStatement st = null;
-
-        try{
+        try {
             st = conn.prepareStatement(
-                    "INSERT INTO vehicle "
-                            + "(licensePlate, type, category) "
-                            + "VALUES "
-                            + "(?, ?, ?)",
+                    "INSERT INTO vehicle (plate, model, category) VALUES (?, ?, ?)",
                     Statement.RETURN_GENERATED_KEYS);
 
-            st.setString(1, vehicle.getLicensePlate());
-            st.setString(2, String.valueOf(vehicle.getType()));
+            st.setString(1, vehicle.getPlate());
+            st.setString(2, vehicle.getModel());
             st.setString(3, String.valueOf(vehicle.getCategory()));
 
-
             int rowsAffected = st.executeUpdate();
-
             if (rowsAffected > 0) {
                 ResultSet rs = st.getGeneratedKeys();
-                if (rs.next()){
+                if (rs.next()) {
                     int id = rs.getInt(1);
                     vehicle.setId(id);
                 }
                 DB.closeResultSet(rs);
+            } else {
+                throw new DbException("Unexpected error! No rows affected.");
             }
-            else {
-                throw new DbException("Unexpected error ! No rows affected!");
-            }
-        }
-        catch (SQLException e){
-            throw new DbException(e.getMessage());
-        }
-        finally {
+        } catch (SQLException e) {
+            throw new DbException("Database error: " + e.getMessage());
+        } finally {
             DB.closeStatement(st);
         }
     }
 
     @Override
-    public void update(Vehicle plate, String oldLicensePlate) {
+    public void update(Vehicle vehicle, String oldPlate) {
         PreparedStatement st = null;
-
         try {
             st = conn.prepareStatement(
-                    "UPDATE vehicle "
-                            + "SET licensePlate = ?, type = ?, category = ? "
-                            + "WHERE licensePlate = ?"
-            );
+                    "UPDATE vehicle SET plate = ?, model = ?, category = ? WHERE plate = ?");
 
-            st.setString(1, plate.getLicensePlate());
-            st.setString(2, String.valueOf(plate.getType()));
-            st.setString(3, String.valueOf(plate.getCategory()));
-            st.setString(4, oldLicensePlate); // Placa antiga passada como parâmetro
+            st.setString(1, vehicle.getPlate());
+            st.setString(2, vehicle.getModel());
+            st.setString(3, String.valueOf(vehicle.getCategory()));
+            st.setString(4, oldPlate);
 
-            int rowsAffected = st.executeUpdate(); // Executa a query uma única vez
+            int rowsAffected = st.executeUpdate();
             if (rowsAffected == 0) {
-                throw new DbException("Unexpected error! No rows affected!");
+                throw new DbException("No rows affected. Check if the plate exists.");
             }
         } catch (SQLException e) {
-            throw new DbException(e.getMessage());
+            throw new DbException("Database error: " + e.getMessage());
         } finally {
             DB.closeStatement(st);
         }
@@ -91,20 +73,17 @@ public class VehicleDaoJDBC implements VehicleDao {
     @Override
     public void deleteByPlate(String plate) {
         PreparedStatement st = null;
-        try{
-            st = conn.prepareStatement("DELETE FROM vehicle WHERE licensePlate = ?");
-
+        try {
+            st = conn.prepareStatement("DELETE FROM vehicle WHERE plate = ?");
             st.setString(1, plate);
+
             int rowsAffected = st.executeUpdate();
             if (rowsAffected == 0) {
-                throw new DbException("Unexpected error ! No rows affected!");
+                throw new DbException("No rows affected. Check if the plate exists.");
             }
-            st.executeUpdate();
-        }
-        catch (SQLException e){
-            throw new DbException(e.getMessage());
-        }
-        finally {
+        } catch (SQLException e) {
+            throw new DbException("Database error: " + e.getMessage());
+        } finally {
             DB.closeStatement(st);
         }
     }
@@ -114,25 +93,21 @@ public class VehicleDaoJDBC implements VehicleDao {
         PreparedStatement st = null;
         ResultSet rs = null;
         try {
-            st = conn.prepareStatement(
-                    "SELECT * FROM vehicle WHERE licensePlate = ?");
-
+            st = conn.prepareStatement("SELECT * FROM vehicle WHERE plate = ?");
             st.setString(1, plate);
             rs = st.executeQuery();
             if (rs.next()) {
-                Vehicle obj = new Vehicle();
-                obj.setId(rs.getInt("id"));
-                obj.setLicensePlate(rs.getString("licensePlate"));
-                obj.setType(Type.valueOf(rs.getString("type")));
-                obj.setCategory(Category.valueOf(rs.getString("category")));
-                return obj;
+                Vehicle vehicle = new Vehicle();
+                vehicle.setId(rs.getInt("id"));
+                vehicle.setPlate(rs.getString("plate"));
+                vehicle.setModel(rs.getString("model"));
+                vehicle.setCategory(Category.valueOf(rs.getString("category")));
+                return vehicle;
             }
             return null;
-        }
-        catch (SQLException e) {
-            throw new DbException(e.getMessage());
-        }
-        finally {
+        } catch (SQLException e) {
+            throw new DbException("Database error: " + e.getMessage());
+        } finally {
             DB.closeStatement(st);
             DB.closeResultSet(rs);
         }
@@ -143,26 +118,22 @@ public class VehicleDaoJDBC implements VehicleDao {
         PreparedStatement st = null;
         ResultSet rs = null;
         try {
-            st = conn.prepareStatement(
-                    "SELECT * FROM vehicle ORDER BY id");
+            st = conn.prepareStatement("SELECT * FROM vehicle ORDER BY id");
             rs = st.executeQuery();
 
             List<Vehicle> list = new ArrayList<>();
-
             while (rs.next()) {
-                Vehicle obj = new Vehicle();
-                obj.setId(rs.getInt("Id"));
-                obj.setLicensePlate(rs.getString("licensePlate"));
-                obj.setType(Type.valueOf(rs.getString("type")));
-                obj.setCategory(Category.valueOf(rs.getString("category")));
-                list.add(obj);
+                Vehicle vehicle = new Vehicle();
+                vehicle.setId(rs.getInt("id"));
+                vehicle.setPlate(rs.getString("plate"));
+                vehicle.setModel(rs.getString("model"));
+                vehicle.setCategory(Category.valueOf(rs.getString("category")));
+                list.add(vehicle);
             }
             return list;
-        }
-        catch (SQLException e) {
-            throw new DbException(e.getMessage());
-        }
-        finally {
+        } catch (SQLException e) {
+            throw new DbException("Database error: " + e.getMessage());
+        } finally {
             DB.closeStatement(st);
             DB.closeResultSet(rs);
         }

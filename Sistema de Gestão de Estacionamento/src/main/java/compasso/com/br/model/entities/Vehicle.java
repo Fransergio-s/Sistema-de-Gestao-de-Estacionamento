@@ -1,23 +1,22 @@
 package compasso.com.br.model.entities;
 
 import compasso.com.br.model.entities.enums.Category;
-import compasso.com.br.model.entities.enums.Type;
 
 import java.util.Objects;
 
 public class Vehicle {
     private int id;
-    private String licensePlate;
-    private Type type;
+    private String plate;
+    private String model;
     private Category category;
 
     public Vehicle() {
     }
 
-    public Vehicle(int id, String plate, Type type, Category category) {
+    public Vehicle(int id, String plate, String model, Category category) {
         this.id = id;
-        this.licensePlate = plate;
-        this.type = type;
+        this.plate = plate;
+        this.model = model;
         this.category = category;
     }
 
@@ -29,21 +28,22 @@ public class Vehicle {
         this.id = id;
     }
 
-    public String getLicensePlate() {
-        return licensePlate;
+    public String getPlate() {
+        return plate;
     }
 
-    public void setLicensePlate(String plate) {
-        this.licensePlate = plate;
+    public void setPlate(String plate) {
+        this.plate = plate;
     }
 
-    public Type getType() {
-        return type;
+    public String getModel() {
+        return model;
     }
 
-    public void setType(Type type) {
-        this.type = type;
+    public void setModel(String model) {
+        this.model = model;
     }
+
 
     public Category getCategory() {
         return category;
@@ -57,7 +57,8 @@ public class Vehicle {
     public String toString() {
         return "Vehicle{" +
                 "id=" + id +
-                ", licensePlate='" + licensePlate + '\'' +
+                ", plate='" + plate + '\'' +
+                ", model='" + model + '\'' +
                 ", type=" + type +
                 ", category=" + category +
                 '}';
@@ -75,6 +76,4 @@ public class Vehicle {
     public int hashCode() {
         return Objects.hashCode(id);
     }
-
-
 }
