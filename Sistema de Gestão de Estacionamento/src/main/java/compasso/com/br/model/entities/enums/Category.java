@@ -1,7 +1,6 @@
 package compasso.com.br.model.entities.enums;
 
-public enum Type {
-
+public enum Category {
     PassengerCars,
     Motorcycles,
     DeliveryTrucks,

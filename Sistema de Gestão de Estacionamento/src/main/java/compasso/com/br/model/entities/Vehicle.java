@@ -1,21 +1,23 @@
 package compasso.com.br.model.entities;
 
-import compasso.com.br.model.entities.enums.Type;
+import compasso.com.br.model.entities.enums.Category;
 
 import java.util.Objects;
 
 public class Vehicle {
     private int id;
-    private String licensePlate;
-    private Type type;
+    private String plate;
+    private String model;
+    private Category category;
 
     public Vehicle() {
     }
 
-    public Vehicle(int id, String plate, String type) {
+    public Vehicle(int id, String plate, String model, Category category) {
         this.id = id;
-        this.licensePlate = plate;
-        this.type = Type.valueOf(type);
+        this.plate = plate;
+        this.model = model;
+        this.category = category;
     }
 
     public int getId() {
@@ -26,28 +28,39 @@ public class Vehicle {
         this.id = id;
     }
 
-    public String getLicensePlate() {
-        return licensePlate;
+    public String getPlate() {
+        return plate;
     }
 
-    public void setLicensePlate(String plate) {
-        this.licensePlate = plate;
+    public void setPlate(String plate) {
+        this.plate = plate;
     }
 
-    public Type getType() {
-        return type;
+    public String getModel() {
+        return model;
     }
 
-    public void setType(String type) {
-        this.type = Type.valueOf(type);
+    public void setModel(String model) {
+        this.model = model;
+    }
+
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
     @Override
     public String toString() {
         return "Vehicle{" +
                 "id=" + id +
-                ", plate='" + licensePlate + '\'' +
-                ", type='" + type + '\'' +
+                ", plate='" + plate + '\'' +
+                ", model='" + model + '\'' +
+                ", type=" + type +
+                ", category=" + category +
                 '}';
     }
 
