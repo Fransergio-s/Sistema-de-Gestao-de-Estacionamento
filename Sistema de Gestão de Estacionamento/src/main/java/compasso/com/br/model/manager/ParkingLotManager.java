@@ -1,5 +1,7 @@
 package compasso.com.br.model.manager;
 
+import compasso.com.br.model.entities.enums.Category;
+
 public class ParkingLotManager {
 
     private int totalSpots; //
@@ -14,8 +16,8 @@ public class ParkingLotManager {
         this.availableMonthlySpots = reservedMonthlySpots;
     }
 
-    public boolean parkVehicle(Type type, boolean isMonthly) {
-        int requiredSpots = getRequiredSpots(type);
+    public boolean parkVehicle(Category category, boolean isMonthly) {
+        int requiredSpots = getRequiredSpots(category);
 
         if (isMonthly) {
             if (availableMonthlySpots >= requiredSpots) {
@@ -34,8 +36,8 @@ public class ParkingLotManager {
         }
     }
 
-    public void leaveVehicle(Type type, boolean isMonthly) {
-        int requiredSpots = getRequiredSpots(type);
+    public void leaveVehicle(Category category, boolean isMonthly) {
+        int requiredSpots = getRequiredSpots(category);
 
         if (isMonthly) {
             availableMonthlySpots += requiredSpots;
@@ -44,16 +46,16 @@ public class ParkingLotManager {
         }
     }
 
-    private int getRequiredSpots(Type type) {
-        switch (type) {
+    private int getRequiredSpots(Category category) {
+        switch (category) {
             case Motorcycles:
                 return 1;
             case PassengerCars:
                 return 2;
-            case Trucks:
+            case DeliveryTrucks:
                 return 4;
             default:
-                throw new IllegalArgumentException("Tipo de veículo desconhecido: " + type);
+                throw new IllegalArgumentException("Tipo de veículo desconhecido: " + category);
         }
     }
 
