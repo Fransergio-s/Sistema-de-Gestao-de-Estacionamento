@@ -13,8 +13,7 @@ public class Vehicle {
     public Vehicle() {
     }
 
-    public Vehicle(int id, String plate, String model, Category category) {
-        this.id = id;
+    public Vehicle(String plate, String model, Category category) {
         this.plate = plate;
         this.model = model;
         this.category = category;
@@ -59,7 +58,6 @@ public class Vehicle {
                 "id=" + id +
                 ", plate='" + plate + '\'' +
                 ", model='" + model + '\'' +
-                ", type=" + type +
                 ", category=" + category +
                 '}';
     }

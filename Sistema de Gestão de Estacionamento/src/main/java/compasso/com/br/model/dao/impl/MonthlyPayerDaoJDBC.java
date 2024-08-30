@@ -28,11 +28,11 @@ public class MonthlyPayerDaoJDBC implements compasso.com.br.model.dao.MonthlyPay
         PreparedStatement st = null;
         try {
             st = conn.prepareStatement(
-                    "INSERT INTO mounthly_payers (payment_mounth, vehicle_id ) VALUES (?, ?)",
+                    "INSERT INTO monthly_payers (payment_month, plate ) VALUES (?, ?)",
                     Statement.RETURN_GENERATED_KEYS);
 
             st.setDate(1, Date.valueOf(monthlyPayer.getPaymentMonth()));
-            st.setInt(2, monthlyPayer.getIdVehicle());
+            st.setString(2, monthlyPayer.getPlate());
 
             int rowsAffected = st.executeUpdate();
             if (rowsAffected > 0) {
@@ -57,10 +57,10 @@ public class MonthlyPayerDaoJDBC implements compasso.com.br.model.dao.MonthlyPay
         PreparedStatement st = null;
         try {
             st = conn.prepareStatement(
-                    "UPDATE monthly_payers SET payment_mounth = ?, vehicle_id = ? WHERE id = ?");
+                    "UPDATE monthly_payers SET payment_month = ?, plate = ? WHERE id = ?");
 
             st.setDate(1, Date.valueOf(monthlyPayer.getPaymentMonth()));
-            st.setInt(2, monthlyPayer.getIdVehicle());
+            st.setString(2, monthlyPayer.getPlate());
             st.setInt(3, monthlyPayer.getId());
 
             int rowsAffected = st.executeUpdate();
@@ -78,7 +78,7 @@ public class MonthlyPayerDaoJDBC implements compasso.com.br.model.dao.MonthlyPay
     public void deleteById(Integer id) {
         PreparedStatement st = null;
         try {
-            st = conn.prepareStatement("DELETE FROM payment_mounth WHERE id = ?");
+            st = conn.prepareStatement("DELETE FROM monthly_payers WHERE id = ?");
 
             st.setInt(1, id);
             int rowsAffected = st.executeUpdate();
@@ -93,18 +93,19 @@ public class MonthlyPayerDaoJDBC implements compasso.com.br.model.dao.MonthlyPay
     }
 
     @Override
-    public MonthlyPayer findById(Integer id) {
+    public MonthlyPayer findByPlate(String plate) {
         PreparedStatement st = null;
         ResultSet rs = null;
         try {
-            st = conn.prepareStatement("SELECT * FROM payment_mounth WHERE id = ?");
-            st.setInt(1, id);
+            st = conn.prepareStatement("SELECT * FROM monthly_payers WHERE plate = ?");
+            st.setString(1, plate);
             rs = st.executeQuery();
             if (rs.next()) {
                 MonthlyPayer monthlyPayer = new MonthlyPayer();
                 monthlyPayer.setId(rs.getInt("id"));
-                monthlyPayer.setPaymentMonth(rs.getDate("plate").toLocalDate());
-                monthlyPayer.setIdVehicle(rs.getInt("vehicle_id"));
+                monthlyPayer.setPaymentMonth(rs.getDate("payment_month").toLocalDate());
+                monthlyPayer.setPlate(rs.getString("plate"));
+
                 return monthlyPayer;
             }
             return null;
@@ -121,15 +122,15 @@ public class MonthlyPayerDaoJDBC implements compasso.com.br.model.dao.MonthlyPay
         PreparedStatement st = null;
         ResultSet rs = null;
         try {
-            st = conn.prepareStatement("SELECT * FROM payment_mounth ORDER BY id");
+            st = conn.prepareStatement("SELECT * FROM monthly_payers ORDER BY id");
             rs = st.executeQuery();
 
             List<MonthlyPayer> list = new ArrayList<>();
             while (rs.next()) {
                 MonthlyPayer monthlyPayer = new MonthlyPayer();
                 monthlyPayer.setId(rs.getInt("id"));
-                monthlyPayer.setPaymentMonth(rs.getDate("plate").toLocalDate());
-                monthlyPayer.setIdVehicle(rs.getInt("vehicle_id"));
+                monthlyPayer.setPaymentMonth(rs.getDate("payment_month").toLocalDate());
+                monthlyPayer.setPlate(rs.getString("plate"));
                 list.add(monthlyPayer);
             }
             return list;

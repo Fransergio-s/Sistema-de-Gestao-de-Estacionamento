@@ -9,14 +9,15 @@ public class ParkingSpot {
     private int id;
     private int number;
     private boolean occupied;
+    private boolean reserved;
 
     public ParkingSpot() {
     }
 
-    public ParkingSpot(int id, int number, boolean occupied) {
-        this.id = id;
+    public ParkingSpot(int number, boolean occupied, boolean reserved) {
         this.number = number;
         this.occupied = occupied;
+        this.reserved = reserved;
     }
 
     public int getId() {
@@ -43,17 +44,6 @@ public class ParkingSpot {
         this.occupied = occupied;
     }
 
-
-    public void parkingSpacesAvailable(){
-        List<ParkingSpot> parkingSpots = new ArrayList<>();
-        for (int i = 0; i < number; i++) {
-            if (!occupied) {
-                parkingSpots.add(new ParkingSpot(id, i, true));
-            }
-        }
-        System.out.println(parkingSpots);
-    }
-
     @Override
     public String toString() {
         return "ParkingSpot{" +
@@ -74,5 +64,13 @@ public class ParkingSpot {
     @Override
     public int hashCode() {
         return Objects.hashCode(id);
+    }
+
+    public boolean isReserved() {
+        return reserved;
+    }
+
+    public void setReserved(boolean reserved) {
+        this.reserved = reserved;
     }
 }

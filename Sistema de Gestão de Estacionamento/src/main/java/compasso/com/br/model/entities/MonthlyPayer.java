@@ -6,15 +6,14 @@ public class MonthlyPayer {
 
     private int id;
     private LocalDate paymentMonth;
-    private int idVehicle;
+    private String plate;
 
     public MonthlyPayer() {
     }
 
-    public MonthlyPayer(int id, LocalDate paymentMonth, int idVehicle) {
-        this.id = id;
+    public MonthlyPayer(LocalDate paymentMonth, String plate) {
         this.paymentMonth = paymentMonth;
-        this.idVehicle = idVehicle;
+        this.plate = plate;
     }
 
     public int getId() {
@@ -33,12 +32,12 @@ public class MonthlyPayer {
         this.paymentMonth = paymentMonth;
     }
 
-    public Integer getIdVehicle() {
-        return idVehicle;
+
+    public String getPlate() {
+        return plate;
     }
 
-    public void setIdVehicle(int idVehicle) {
-        this.idVehicle = idVehicle;
+    public void setPlate(String plate) {
+        this.plate = plate;
     }
-
 }
