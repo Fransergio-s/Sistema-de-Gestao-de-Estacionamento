@@ -17,8 +17,7 @@ public class Ticket {
     public Ticket() {
     }
 
-    public Ticket(int id, String plate, LocalDateTime entryHour, LocalDateTime exitHour, int entryGate, int exitGate, ParkingSpot parkingSpot, Double amount) {
-        this.id = id;
+    public Ticket(String plate, LocalDateTime entryHour, LocalDateTime exitHour, int entryGate, int exitGate, ParkingSpot parkingSpot, Double amount) {
         this.plate = plate;
         this.entryHour = entryHour;
         this.exitHour = exitHour;
@@ -27,6 +26,7 @@ public class Ticket {
         this.parkingSpot = parkingSpot;
         this.amount = amount;
     }
+
 
     public int getId() {
         return id;

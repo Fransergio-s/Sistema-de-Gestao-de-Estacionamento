@@ -102,6 +102,32 @@ public class ParkingSpotDaoJDBC implements ParkingSpotDao {
     }
 
     @Override
+    public List<ParkingSpot> findUnavailableSpots() {
+        PreparedStatement st = null;
+        ResultSet rs = null;
+        try {
+            st = conn.prepareStatement("SELECT * FROM parking_spot WHERE occupied = FALSE");
+            rs = st.executeQuery();
+
+            List<ParkingSpot> list = new ArrayList<>();
+            while (rs.next()) {
+                ParkingSpot spot = new ParkingSpot();
+                spot.setId(rs.getInt("id"));
+                spot.setNumber(rs.getInt("number"));
+                spot.setOccupied(rs.getBoolean("occupied"));
+                spot.setReserved(rs.getBoolean("reserved"));
+                list.add(spot);
+            }
+            return list;
+        } catch (SQLException e) {
+            throw new DbException(e.getMessage());
+        } finally {
+            DB.closeStatement(st);
+            DB.closeResultSet(rs);
+        }
+    }
+
+    @Override
     public List<ParkingSpot> findAvailableSpotsMonthlyPayers() {
         PreparedStatement st = null;
         ResultSet rs = null;
@@ -254,4 +280,6 @@ public class ParkingSpotDaoJDBC implements ParkingSpotDao {
             DB.closeStatement(st);
         }
     }
+
+
 }

@@ -16,4 +16,5 @@ public interface ParkingSpotDao {
     List<ParkingSpot> findAvailableSpotsMonthlyPayers();
     List<ParkingSpot> allocateConsecutiveSpots(int requiredSpots);
     ParkingSpot createAdditionalSpotForPublicService();
+    public List<ParkingSpot> findUnavailableSpots();
 }
