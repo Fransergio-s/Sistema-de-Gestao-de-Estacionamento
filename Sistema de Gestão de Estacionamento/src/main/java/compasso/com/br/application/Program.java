@@ -48,7 +48,7 @@ public class Program {
                     break;
 
                 case 2:
-                    // Implementar lógica para saída de veículo (a ser implementado)
+                    handleVehicleExit(sc, vehicleDao, parkingSpotDao, monthlyPayerDao);
                     break;
 
                 case 3:
@@ -362,7 +362,7 @@ public class Program {
 
     // Lida com a entrada de veículos casuais
     private static void handleCasualExit(Scanner sc, ParkingSpotDao parkingSpotDao) {
-        allocateSpots(sc, parkingSpotDao);
+        deallocateSpots(sc, parkingSpotDao);
     }
 
     // Lida com a entrada de veículos casuais
@@ -373,8 +373,7 @@ public class Program {
 
     // Lida com a entrada de veículos casuais
     private static void handleCasualExitMotorcycle(Scanner sc, ParkingSpotDao parkingSpotDao) {
-        allocateSpots(sc, parkingSpotDao);
-
+        deallSpotForSingleVehicle(sc, parkingSpotDao);
     }
 
     // Aloca vagas para um veículo
@@ -440,7 +439,6 @@ public class Program {
         int vacancy3 = sc.nextInt();
         System.out.print("Vacancy 4: ");
         int vacancy4 = sc.nextInt();
-        sc.nextLine();
         sc.nextLine();
 
         // Verifica se as vagas selecionadas estão disponíveis
