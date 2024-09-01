@@ -1,15 +1,15 @@
 package compasso.com.br.application;
 
-import compasso.com.br.model.dao.MonthlyPayerDao;
-import compasso.com.br.model.dao.ParkingSpotDao;
-import compasso.com.br.model.dao.VehicleDao;
-import compasso.com.br.model.dao.DaoFactory;
+import compasso.com.br.model.dao.*;
 import compasso.com.br.model.entities.MonthlyPayer;
 import compasso.com.br.model.entities.ParkingSpot;
+import compasso.com.br.model.entities.Ticket;
 import compasso.com.br.model.entities.Vehicle;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Scanner;
 
 import static compasso.com.br.model.entities.enums.Category.DeliveryTrucks;
@@ -26,6 +26,7 @@ public class Program {
         VehicleDao vehicleDao = DaoFactory.createVehicleDao();
         ParkingSpotDao parkingSpotDao = DaoFactory.createParkingDao();
         MonthlyPayerDao monthlyPayerDao = DaoFactory.createMonthlyPayerDao();
+        TicketDao ticketDao = DaoFactory.createTicketDao();
 
         // Loop principal do menu
         while (!exit) {
@@ -44,11 +45,11 @@ public class Program {
             // Executa a lógica com base na escolha do usuário
             switch (choice) {
                 case 1:
-                    handleVehicleEntry(sc, vehicleDao, parkingSpotDao, monthlyPayerDao);
+                    handleVehicleEntry(sc, vehicleDao, parkingSpotDao, monthlyPayerDao, ticketDao);
                     break;
 
                 case 2:
-                    handleVehicleExit(sc, vehicleDao, parkingSpotDao, monthlyPayerDao);
+                    handleVehicleExit(sc, vehicleDao, parkingSpotDao, monthlyPayerDao, ticketDao);
                     break;
 
                 case 3:
@@ -68,18 +69,19 @@ public class Program {
     }
 
     // Função para lidar com a entrada de veículos
-    private static void handleVehicleEntry(Scanner sc, VehicleDao vehicleDao, ParkingSpotDao parkingSpotDao, MonthlyPayerDao monthlyPayerDao) {
+    private static void handleVehicleEntry(Scanner sc, VehicleDao vehicleDao, ParkingSpotDao parkingSpotDao, MonthlyPayerDao monthlyPayerDao, TicketDao ticketDao) {
         System.out.print("What category is your car? (Passenger Cars (C), Motorcycles (M), Delivery Trucks (T), Public Service Vehicles (P)): ");
         String choiseCategory = sc.next().toUpperCase();
+        int entryGate = checkEntryGate(sc, choiseCategory);
 
         // Escolha da categoria do veículo
         switch (choiseCategory) {
             case "C":
-                handlePassengerCarEntry(sc, vehicleDao, parkingSpotDao, monthlyPayerDao);
+                handlePassengerCarEntry(sc, vehicleDao, parkingSpotDao, monthlyPayerDao, ticketDao, entryGate);
                 break;
 
             case "M":
-                handleMotorcycleEntry(sc, vehicleDao, parkingSpotDao, monthlyPayerDao);
+                handleMotorcycleEntry(sc, vehicleDao, parkingSpotDao, monthlyPayerDao, ticketDao, entryGate);
                 break;
 
             case "T":
@@ -96,18 +98,19 @@ public class Program {
     }
 
     // Função para lidar com a entrada de veículos
-    private static void handleVehicleExit(Scanner sc, VehicleDao vehicleDao, ParkingSpotDao parkingSpotDao, MonthlyPayerDao monthlyPayerDao) {
+    private static void handleVehicleExit(Scanner sc, VehicleDao vehicleDao, ParkingSpotDao parkingSpotDao, MonthlyPayerDao monthlyPayerDao, TicketDao ticketDao) {
         System.out.print("What category is your car? (Passenger Cars (C), Motorcycles (M), Delivery Trucks (T), Public Service Vehicles (P)): ");
         String choiseCategory = sc.next().toUpperCase();
+        int exitGate = checkExitGate(sc, choiseCategory);
 
         // Escolha da categoria do veículo
         switch (choiseCategory) {
             case "C":
-                handlePassengerCarExit(sc, vehicleDao, parkingSpotDao, monthlyPayerDao);
+                handlePassengerCarExit(sc, vehicleDao, parkingSpotDao, monthlyPayerDao, exitGate, ticketDao);
                 break;
 
             case "M":
-                handleMotorcycleExit(sc, vehicleDao, parkingSpotDao, monthlyPayerDao);
+                handleMotorcycleExit(sc, vehicleDao, parkingSpotDao, monthlyPayerDao, exitGate, ticketDao);
                 break;
 
             case "T":
@@ -124,7 +127,8 @@ public class Program {
     }
 
     // Função para lidar com a entrada de carros de passeio
-    private static void handlePassengerCarEntry(Scanner sc, VehicleDao vehicleDao, ParkingSpotDao parkingSpotDao, MonthlyPayerDao monthlyPayerDao) {
+    private static void handlePassengerCarEntry(Scanner sc, VehicleDao vehicleDao, ParkingSpotDao parkingSpotDao, MonthlyPayerDao monthlyPayerDao, TicketDao ticketDao, Integer entryGate) {
+
         List<ParkingSpot> availableSpots = parkingSpotDao.findAvailableSpots();
 
         // Verifica se há vagas suficientes
@@ -145,13 +149,14 @@ public class Program {
         if (carType.equals("M")) {
             handleMonthlyPayer(sc, vehicleDao, parkingSpotDao, monthlyPayerDao);
         } else {
-            handleCasualEntry(sc, parkingSpotDao);
+            handleCasualEntry(sc, parkingSpotDao, ticketDao, entryGate);
         }
     }
 
 
     // Lida com a entrada de motocicletas
-    private static void handleMotorcycleEntry(Scanner sc, VehicleDao vehicleDao, ParkingSpotDao parkingSpotDao, MonthlyPayerDao monthlyPayerDao) {
+    private static void handleMotorcycleEntry(Scanner sc, VehicleDao vehicleDao, ParkingSpotDao parkingSpotDao, MonthlyPayerDao monthlyPayerDao, TicketDao ticketDao, Integer entryGate) {
+
         List<ParkingSpot> availableSpots = parkingSpotDao.findAvailableSpots();
 
         // Verifica se há vagas suficientes
@@ -172,7 +177,7 @@ public class Program {
         if (carType.equals("M")) {
             handleMonthlyPayerMotorcycle(sc, vehicleDao, parkingSpotDao, monthlyPayerDao);
         } else {
-            handleCasualEntryMotorcycle(sc, parkingSpotDao);
+            handleCasualEntryMotorcycle(sc, parkingSpotDao, ticketDao,  entryGate);
         }
     }
 
@@ -190,7 +195,7 @@ public class Program {
     }
 
     // Função para lidar com a saida de carros de passeio
-    private static void handlePassengerCarExit(Scanner sc, VehicleDao vehicleDao, ParkingSpotDao parkingSpotDao, MonthlyPayerDao monthlyPayerDao) {
+    private static void handlePassengerCarExit(Scanner sc, VehicleDao vehicleDao, ParkingSpotDao parkingSpotDao, MonthlyPayerDao monthlyPayerDao, Integer exitGate, TicketDao ticketDao) {
 
         System.out.print("What type of car is yours? (Monthly Payer (M), Casual (C)): ");
         String carType = sc.next().toUpperCase();
@@ -210,7 +215,7 @@ public class Program {
 
 
     // Lida com a saida de motocicletas
-    private static void handleMotorcycleExit(Scanner sc, VehicleDao vehicleDao, ParkingSpotDao parkingSpotDao, MonthlyPayerDao monthlyPayerDao) {
+    private static void handleMotorcycleExit(Scanner sc, VehicleDao vehicleDao, ParkingSpotDao parkingSpotDao, MonthlyPayerDao monthlyPayerDao, Integer exitGate, TicketDao ticketDao) {
 
         System.out.print("What type of car is yours? (Monthly Payer (M), Casual (C)): ");
         String carType = sc.next().toUpperCase();
@@ -230,7 +235,6 @@ public class Program {
 
     // Lida com a entrada de caminhões
     private static void handleTruckExit(Scanner sc, VehicleDao vehicleDao, ParkingSpotDao parkingSpotDao) {
-
         System.out.println("Registering truck Exit...");
         deallSpotsTrucs(sc, parkingSpotDao); // Desocupa 4 vagas
     }
@@ -257,7 +261,7 @@ public class Program {
     }
 
     // Lida com a saida de pagadores mensais
-    private static void handleMonthlyPayerExit(Scanner sc, VehicleDao vehicleDao, ParkingSpotDao parkingSpotDao, MonthlyPayerDao monthlyPayerDao) {
+    private static void handleMonthlyPayerExit(Scanner sc, ParkingSpotDao parkingSpotDao, MonthlyPayerDao monthlyPayerDao) {
         System.out.print("Enter your license plate: ");
         String licensePlate = sc.next().toUpperCase();
         sc.nextLine(); // Consumir a quebra de linha
@@ -355,9 +359,51 @@ public class Program {
     }
 
 
-    // Lida com a entrada de veículos casuais
-    private static void handleCasualEntry(Scanner sc, ParkingSpotDao parkingSpotDao) {
-        allocateSpots(sc, parkingSpotDao);
+    // Lida com a entrada de veículos que usam ticket
+    private static void handleCasualEntry(Scanner sc, ParkingSpotDao parkingSpotDao, TicketDao ticketDao,Integer entryGate) {
+        // Busca vagas disponíveis
+        List<ParkingSpot> availableSpots = parkingSpotDao.findAvailableSpots();
+
+
+        // Mostra ao usuário as vagas disponíveis
+        System.out.println("Available spots:");
+        for (int i = 0; i < availableSpots.size(); i++) {
+            System.out.print(availableSpots.get(i).getNumber() + " ");
+            // Coloca uma quebra de linha a cada dois números para mostrar pares de vagas
+            if ((i + 1) % 2 == 0) {
+                System.out.println();
+            }
+        }
+
+        System.out.println("\nSelect the first vacancy: ");
+        int selectedSpot = sc.nextInt();
+
+        System.out.println("Insert your license plate");
+        String licensePlate = sc.next();
+
+        sc.nextLine(); // Consumir a quebra de linha
+
+        // Verifica se a segunda vaga necessária está disponível
+        ParkingSpot firstSpot = parkingSpotDao.findByNumber(selectedSpot);
+        ParkingSpot secondSpot = parkingSpotDao.findByNumber(selectedSpot + 1);
+
+        if (firstSpot == null || secondSpot == null || firstSpot.isOccupied() || secondSpot.isOccupied()) {
+            System.out.println("The selected spot or its pair is not available. Please try again.");
+            return;
+        }
+
+        // Atualiza o estado das vagas como ocupadas
+        firstSpot.setOccupied(true);
+        secondSpot.setOccupied(true);
+        parkingSpotDao.update(firstSpot);
+        parkingSpotDao.update(secondSpot);
+
+        // Registra a entrada do veículo com as vagas ocupadas
+        String occupiedSpots = firstSpot.getNumber() + "/" + secondSpot.getNumber();
+        Ticket ticket = new Ticket(licensePlate, LocalDateTime.now(), LocalDateTime.now(), entryGate, 0, occupiedSpots, 0.0);
+        ticketDao.insert(ticket);
+
+        System.out.println("Entry registered successfully. Spots " + occupiedSpots + " have been allocated.");
     }
 
     // Lida com a entrada de veículos casuais
@@ -366,8 +412,49 @@ public class Program {
     }
 
     // Lida com a entrada de veículos casuais
-    private static void handleCasualEntryMotorcycle(Scanner sc, ParkingSpotDao parkingSpotDao) {
-        allocateSpots(sc, parkingSpotDao);
+    private static void handleCasualEntryMotorcycle(Scanner sc, ParkingSpotDao parkingSpotDao,TicketDao ticketDao, Integer entryGate) {
+        // Busca vagas disponíveis
+        List<ParkingSpot> availableSpots = parkingSpotDao.findAvailableSpots();
+
+        // Verifica se há vagas suficientes para um carro de passeio
+        if (availableSpots.isEmpty()) {
+            System.out.println("No vacancies available, come back later!");
+            return;
+        }
+
+        // Mostra ao usuário as vagas disponíveis em pares
+        System.out.println("Available spots:");
+        for (int i = 0; i < availableSpots.size(); i += 2) {
+            if (i + 1 < availableSpots.size()) {
+                System.out.println(availableSpots.get(i).getNumber() + " / " + availableSpots.get(i + 1).getNumber());
+            } else {
+                // Se houver um número ímpar de vagas, mostra a última vaga sem par
+                System.out.println(availableSpots.get(i).getNumber());
+            }
+        }
+
+        System.out.println("\nSelect the first vacancy: ");
+        int selectedSpot = sc.nextInt();
+
+        System.out.println("Insert your license plate");
+        String licensePlate = sc.next();
+
+        sc.nextLine(); // Consumir a quebra de linha
+
+        // Verifica se a segunda vaga necessária está disponível
+        ParkingSpot firstSpot = parkingSpotDao.findByNumber(selectedSpot);
+
+
+        // Atualiza o estado das vagas como ocupadas
+        firstSpot.setOccupied(true);
+        parkingSpotDao.update(firstSpot);
+
+        // Registra a entrada do veículo com as vagas ocupadas
+        String occupiedSpots = String.valueOf(firstSpot.getNumber());
+        Ticket ticket = new Ticket(licensePlate, LocalDateTime.now(), LocalDateTime.now(), entryGate, 0, occupiedSpots, 0.0);
+        ticketDao.insert(ticket);
+
+        System.out.println("Entry registered successfully. Spots " + occupiedSpots + " have been allocated.");
 
     }
 
@@ -427,6 +514,7 @@ public class Program {
     // Aloca vagas para um veículo
     private static void allocateSpotsTrucs(Scanner sc, ParkingSpotDao parkingSpotDao) {
         List<ParkingSpot> availableSpots = parkingSpotDao.findUnavailableSpots();
+
 
         // Seleção das vagas pelo usuário
         System.out.println("Select the vacancies (select four vacancies)");
@@ -529,6 +617,15 @@ public class Program {
     private static void allocateSpotForSingleVehicle(Scanner sc, ParkingSpotDao parkingSpotDao) {
         List<ParkingSpot> availableSpots = parkingSpotDao.findAvailableSpots();
 
+        System.out.println("Available spots:");
+        for (int i = 0; i < availableSpots.size(); i += 2) {
+            if (i + 1 < availableSpots.size()) {
+                System.out.println(availableSpots.get(i).getNumber() + " / " + availableSpots.get(i + 1).getNumber());
+            } else {
+                // Se houver um número ímpar de vagas, mostra a última vaga sem par
+                System.out.println(availableSpots.get(i).getNumber());
+            }
+        }
         System.out.println("Select the vacancy:");
         int vacancy = sc.nextInt();
         sc.nextLine();
@@ -564,6 +661,62 @@ public class Program {
         List<ParkingSpot> availableSpots = parkingSpotDao.findAvailableSpots();
         System.out.println("Vacancies available: " + availableSpots.size() + "\n");
     }
+
+
+    // Lógica para verificar a cancela de entrada
+    private static int checkEntryGate(Scanner sc, String category) {
+        while (true) {
+            System.out.println("Enter the entry gate (1 to 5):");
+            int gate = sc.nextInt();
+
+            if(Objects.equals(category, "C")){
+                if (gate >= 1 && gate <= 5) {
+                    return gate; // Cancela válida
+                }
+            } else if (Objects.equals(category, "M")) {
+                if (gate == 5) {
+                    return gate;
+                }
+            } else if (Objects.equals(category, "T")) {
+                if (gate == 1) {
+                    return gate;
+                }
+            } else if (Objects.equals(category, "P")) {
+                return gate;
+            }
+            else {
+                System.out.println("Invalid entry gate. Please try in other.");
+            }
+        }
+    }
+
+    // Lógica para verificar a cancela de saída
+    private static int checkExitGate(Scanner sc, String category) {
+        while (true) {
+            System.out.println("Enter the entry gate (1 to 5):");
+            int gate = sc.nextInt();
+
+            if(Objects.equals(category, "C")){
+                if (gate >= 6 && gate <= 10) {
+                    return gate; // Cancela válida
+                }
+            } else if (Objects.equals(category, "M")) {
+                if (gate == 10) {
+                    return gate;
+                }
+            } else if (Objects.equals(category, "T")) {
+                if (gate >= 6 && gate <= 10) {
+                    return gate;
+                }
+            } else if (Objects.equals(category, "P")) {
+                return gate;
+            }
+            else {
+                System.out.println("Invalid exit gate. Please try in other.");
+            }
+        }
+    }
+
 
 
 }

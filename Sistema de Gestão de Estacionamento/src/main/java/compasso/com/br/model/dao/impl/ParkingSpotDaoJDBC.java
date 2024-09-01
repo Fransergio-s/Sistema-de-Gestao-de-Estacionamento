@@ -70,10 +70,33 @@ public class ParkingSpotDaoJDBC implements ParkingSpotDao {
     }
 
     @Override
-    public ParkingSpot findById(Integer id) {
-        // Implementar se necessário
-        return null;
+    public ParkingSpot findByNumber(int number) {
+        PreparedStatement st = null;
+        ResultSet rs = null;
+        try {
+            st = conn.prepareStatement(
+                    "SELECT * FROM parking_spot WHERE number = ?"
+            );
+            st.setInt(1, number);
+            rs = st.executeQuery();
+
+            if (rs.next()) {
+                ParkingSpot spot = new ParkingSpot();
+                spot.setId(rs.getInt("id"));
+                spot.setNumber(rs.getInt("number"));
+                spot.setOccupied(rs.getBoolean("occupied"));
+                spot.setReserved(rs.getBoolean("reserved"));
+                return spot;
+            }
+            return null; // Retorna null se a vaga não for encontrada
+        } catch (SQLException e) {
+            throw new DbException("Error finding parking spot by number: " + e.getMessage());
+        } finally {
+            DB.closeStatement(st);
+            DB.closeResultSet(rs);
+        }
     }
+
 
     @Override
     public List<ParkingSpot> findAvailableSpots() {
