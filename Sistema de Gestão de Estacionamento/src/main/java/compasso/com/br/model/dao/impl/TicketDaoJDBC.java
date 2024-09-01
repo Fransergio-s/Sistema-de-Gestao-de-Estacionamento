@@ -27,16 +27,16 @@ public class TicketDaoJDBC implements TicketDao {
         try {
             st = conn.prepareStatement(
                     "INSERT INTO ticket " +
-                            "(plate, entry_hour, exit_hour, entry_gate, exit_gate, parking_spot_id, amount) " +
-                            "VALUES (?, ?, ?, ?, ?, ?. ?)",
+                            "(plate, entry_hour, exit_hour, entry_gate, exit_gate, parking_spot, amount) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?)",
                     Statement.RETURN_GENERATED_KEYS);
 
             st.setString(1, ticket.getPlate());
-            st.setDate(2, Date.valueOf(String.valueOf(ticket.getEntryHour())));
-            st.setDate(3, Date.valueOf(String.valueOf(ticket.getExitHour())));
+            st.setString(2, String.valueOf(ticket.getEntryHour()));
+            st.setString(3, String.valueOf(ticket.getExitHour()));
             st.setInt(4, ticket.getEntryGate());
             st.setInt(5, ticket.getExitGate());
-            st.setInt(6, ticket.getParkingSpot().getId());
+            st.setString(6, ticket.getParkingSpot());
             st.setDouble(7, ticket.getAmount());
 
             int rowsAffected = st.executeUpdate();
@@ -63,7 +63,7 @@ public class TicketDaoJDBC implements TicketDao {
         try {
             st = conn.prepareStatement(
                     "UPDATE ticket " +
-                            "SET plate = ?, entry_hour = ?, exit_hour = ?, entry_gate = ?, exit_gate = ?, parking_spot_id = ?, amount = ? " +
+                            "SET plate = ?, entry_hour = ?, exit_hour = ?, entry_gate = ?, exit_gate = ?, parking_spot = ?, amount = ? " +
                             "WHERE id = ?");
 
             st.setString(1, ticket.getPlate());
@@ -72,7 +72,7 @@ public class TicketDaoJDBC implements TicketDao {
             st.setInt(4, ticket.getEntryGate());
             st.setInt(5, ticket.getExitGate());
             st.setDouble(6, ticket.getAmount());
-            st.setInt(7, ticket.getParkingSpot().getId());
+            st.setString(7, ticket.getParkingSpot());
             st.setInt(8, ticket.getId());
 
             st.executeUpdate();
@@ -117,7 +117,8 @@ public class TicketDaoJDBC implements TicketDao {
                 ticket.setExitHour(LocalDateTime.parse(String.valueOf(rs.getDate("exit_hour"))));
                 ticket.setEntryGate(rs.getInt("entry_gate"));
                 ticket.setExitGate(rs.getInt("exit_gate"));
-                ticket.setParkingSpot((ParkingSpot) rs.getObject("parking_spot_id"));
+
+
                 ticket.setAmount(rs.getDouble("amount"));
                 return ticket;
             }
@@ -147,7 +148,7 @@ public class TicketDaoJDBC implements TicketDao {
                 ticket.setExitHour(LocalDateTime.parse(String.valueOf(rs.getDate("exit_hour"))));
                 ticket.setEntryGate(rs.getInt("entry_gate"));
                 ticket.setExitGate(rs.getInt("exit_gate"));
-                ticket.setParkingSpot((ParkingSpot) rs.getObject("parking_spot_id"));
+                ticket.setParkingSpot(rs.getString("parking_spot"));
                 ticket.setAmount(rs.getDouble("amount"));
                 list.add(ticket);
             }

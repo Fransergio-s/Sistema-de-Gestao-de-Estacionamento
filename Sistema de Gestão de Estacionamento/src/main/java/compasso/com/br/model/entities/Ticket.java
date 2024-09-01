@@ -11,14 +11,13 @@ public class Ticket {
     private LocalDateTime exitHour;
     private int entryGate;
     private int exitGate;
-    private ParkingSpot parkingSpot;
+    private String parkingSpot;
     private Double amount;
 
     public Ticket() {
     }
 
-    public Ticket(int id, String plate, LocalDateTime entryHour, LocalDateTime exitHour, int entryGate, int exitGate, ParkingSpot parkingSpot, Double amount) {
-        this.id = id;
+    public Ticket(String plate, LocalDateTime entryHour, LocalDateTime exitHour, int entryGate, int exitGate, String parkingSpot, Double amount) {
         this.plate = plate;
         this.entryHour = entryHour;
         this.exitHour = exitHour;
@@ -27,6 +26,7 @@ public class Ticket {
         this.parkingSpot = parkingSpot;
         this.amount = amount;
     }
+
 
     public int getId() {
         return id;
@@ -76,11 +76,11 @@ public class Ticket {
         this.exitGate = exitGate;
     }
 
-    public ParkingSpot getParkingSpot() {
+    public String getParkingSpot() {
         return parkingSpot;
     }
 
-    public void setParkingSpot(ParkingSpot parkingSpot) {
+    public void setParkingSpot(String parkingSpot) {
         this.parkingSpot = parkingSpot;
     }
 

@@ -10,10 +10,11 @@ public interface ParkingSpotDao {
     void insert(ParkingSpot parkingSpot);
     void update(ParkingSpot parkingSpot);
     void deleteById(Integer id);
-    ParkingSpot findById(Integer id);
+    ParkingSpot findByNumber(int number);
     List<ParkingSpot> findAvailableSpots();
     int getTotalSpots();
     List<ParkingSpot> findAvailableSpotsMonthlyPayers();
     List<ParkingSpot> allocateConsecutiveSpots(int requiredSpots);
     ParkingSpot createAdditionalSpotForPublicService();
+    public List<ParkingSpot> findUnavailableSpots();
 }
