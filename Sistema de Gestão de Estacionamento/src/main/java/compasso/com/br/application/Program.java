@@ -185,13 +185,49 @@ public class Program {
     private static void handleTruckEntry(Scanner sc, VehicleDao vehicleDao, ParkingSpotDao parkingSpotDao) {
 
         List<ParkingSpot> availableSpots = parkingSpotDao.findAvailableSpots();
-        if (availableSpots.size() >= 4) {
-            System.out.println("Registering truck entry...");
-            registerDeliveredTrucks(sc, vehicleDao);
-            allocateSpotsTrucs(sc, parkingSpotDao); // Aloca 4 vagas
-        } else {
-            System.out.println("No vacancies available, come back later!");
+
+        registerDeliveredTrucks(sc, vehicleDao);
+        // Mostra ao usuário as vagas disponíveis em quartetos
+        System.out.println("Available spots:");
+        for (int i = 0; i < availableSpots.size(); i++) {
+            System.out.print(availableSpots.get(i).getNumber() + " ");
+            // Coloca uma quebra de linha a cada quatro números para mostrar quartetos de vagas
+            if ((i + 1) % 4 == 0) {
+                System.out.println();
+            }
         }
+        System.out.println(); // Quebra de linha após a lista de vagas
+
+        System.out.println("Select the first vacancy: ");
+        int selectedSpot = sc.nextInt();
+        sc.nextLine(); // Consumir a quebra de linha
+
+        // Verifica se as quatro vagas necessárias estão disponíveis
+        ParkingSpot firstSpot = parkingSpotDao.findByNumber(selectedSpot);
+        ParkingSpot secondSpot = parkingSpotDao.findByNumber(selectedSpot + 1);
+        ParkingSpot thirdSpot = parkingSpotDao.findByNumber(selectedSpot + 2);
+        ParkingSpot fourthSpot = parkingSpotDao.findByNumber(selectedSpot + 3);
+
+        if (firstSpot == null || secondSpot == null || thirdSpot == null || fourthSpot == null ||
+                firstSpot.isOccupied() || secondSpot.isOccupied() || thirdSpot.isOccupied() || fourthSpot.isOccupied()) {
+            System.out.println("One or more selected spots in the quartet are not available. Please try again.");
+            return;
+        }
+
+        // Atualiza o estado das vagas como ocupadas
+        firstSpot.setOccupied(true);
+        secondSpot.setOccupied(true);
+        thirdSpot.setOccupied(true);
+        fourthSpot.setOccupied(true);
+        parkingSpotDao.update(firstSpot);
+        parkingSpotDao.update(secondSpot);
+        parkingSpotDao.update(thirdSpot);
+        parkingSpotDao.update(fourthSpot);
+
+        // Registra a entrada do veículo com as vagas ocupadas
+        String occupiedSpots = firstSpot.getNumber() + "/" + secondSpot.getNumber() + "/" + thirdSpot.getNumber() + "/" + fourthSpot.getNumber();
+        System.out.println("Entry registered successfully. Spots " + occupiedSpots + " have been allocated.");
+
     }
 
     // Função para lidar com a saida de carros de passeio
@@ -207,7 +243,7 @@ public class Program {
 
         // Lógica para pagadores mensais ou casuais
         if (carType.equals("M")) {
-            handleMonthlyPayerExit(sc, vehicleDao, parkingSpotDao, monthlyPayerDao);
+            handleMonthlyPayerExit(sc, parkingSpotDao, monthlyPayerDao);
         } else {
             handleCasualExit(sc, parkingSpotDao);
         }
