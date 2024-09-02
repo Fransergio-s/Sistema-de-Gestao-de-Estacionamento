@@ -129,7 +129,7 @@ public class ParkingSpotDaoJDBC implements ParkingSpotDao {
         PreparedStatement st = null;
         ResultSet rs = null;
         try {
-            st = conn.prepareStatement("SELECT * FROM parking_spot WHERE occupied = FALSE");
+            st = conn.prepareStatement("SELECT * FROM parking_spot WHERE occupied = TRUE");
             rs = st.executeQuery();
 
             List<ParkingSpot> list = new ArrayList<>();

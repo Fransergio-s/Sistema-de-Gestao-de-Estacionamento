@@ -110,7 +110,7 @@ public class Program {
                 break;
 
             case "M":
-                handleMotorcycleExit(sc, vehicleDao, parkingSpotDao, monthlyPayerDao, exitGate, ticketDao);
+                handleMotorcycleExit(sc, vehicleDao, parkingSpotDao, monthlyPayerDao,ticketDao, exitGate);
                 break;
 
             case "T":
@@ -245,13 +245,13 @@ public class Program {
         if (carType.equals("M")) {
             handleMonthlyPayerExit(sc, parkingSpotDao, monthlyPayerDao);
         } else {
-            handleCasualExit(sc, parkingSpotDao);
+            handleCasualExit(sc, parkingSpotDao, exitGate, ticketDao);
         }
     }
 
 
     // Lida com a saida de motocicletas
-    private static void handleMotorcycleExit(Scanner sc, VehicleDao vehicleDao, ParkingSpotDao parkingSpotDao, MonthlyPayerDao monthlyPayerDao, Integer exitGate, TicketDao ticketDao) {
+    private static void handleMotorcycleExit(Scanner sc, VehicleDao vehicleDao, ParkingSpotDao parkingSpotDao, MonthlyPayerDao monthlyPayerDao,TicketDao ticketDao, Integer exitGate) {
 
         System.out.print("What type of car is yours? (Monthly Payer (M), Casual (C)): ");
         String carType = sc.next().toUpperCase();
@@ -265,14 +265,55 @@ public class Program {
         if (carType.equals("M")) {
             handleMonthlyPayerMotorcycleExit(sc, vehicleDao, parkingSpotDao, monthlyPayerDao);
         } else {
-            handleCasualExitMotorcycle(sc, parkingSpotDao);
+            handleCasualExitMotorcycle(sc, parkingSpotDao, ticketDao, exitGate);
         }
     }
 
     // Lida com a entrada de caminhões
     private static void handleTruckExit(Scanner sc, VehicleDao vehicleDao, ParkingSpotDao parkingSpotDao) {
-        System.out.println("Registering truck Exit...");
-        deallSpotsTrucs(sc, parkingSpotDao); // Desocupa 4 vagas
+        List<ParkingSpot> unavailableSpots = parkingSpotDao.findUnavailableSpots();
+
+        registerDeliveredTrucks(sc, vehicleDao);
+        // Mostra ao usuário as vagas disponíveis em quartetos
+        System.out.println("Unavailable spots:");
+        for (int i = 0; i < unavailableSpots.size(); i++) {
+            System.out.print(unavailableSpots.get(i).getNumber() + " ");
+            // Coloca uma quebra de linha a cada quatro números para mostrar quartetos de vagas
+            if ((i + 1) % 4 == 0) {
+                System.out.println();
+            }
+        }
+        System.out.println(); // Quebra de linha após a lista de vagas
+
+        System.out.println("Select the first vacancy: ");
+        int selectedSpot = sc.nextInt();
+        sc.nextLine(); // Consumir a quebra de linha
+
+        // Verifica se as quatro vagas necessárias estão disponíveis
+        ParkingSpot firstSpot = parkingSpotDao.findByNumber(selectedSpot);
+        ParkingSpot secondSpot = parkingSpotDao.findByNumber(selectedSpot + 1);
+        ParkingSpot thirdSpot = parkingSpotDao.findByNumber(selectedSpot + 2);
+        ParkingSpot fourthSpot = parkingSpotDao.findByNumber(selectedSpot + 3);
+
+        if (firstSpot == null || secondSpot == null || thirdSpot == null || fourthSpot == null ||
+                !firstSpot.isOccupied() || !secondSpot.isOccupied() || !thirdSpot.isOccupied() || !fourthSpot.isOccupied()) {
+            System.out.println("One or more selected spots in the quartet are not available. Please try again.");
+            return;
+        }
+
+        // Atualiza o estado das vagas como ocupadas
+        firstSpot.setOccupied(false);
+        secondSpot.setOccupied(false);
+        thirdSpot.setOccupied(false);
+        fourthSpot.setOccupied(false);
+        parkingSpotDao.update(firstSpot);
+        parkingSpotDao.update(secondSpot);
+        parkingSpotDao.update(thirdSpot);
+        parkingSpotDao.update(fourthSpot);
+
+        // Registra a entrada do veículo com as vagas ocupadas
+        String occupiedSpots = firstSpot.getNumber() + "/" + secondSpot.getNumber() + "/" + thirdSpot.getNumber() + "/" + fourthSpot.getNumber();
+        System.out.println("Exit registered successfully. Spots " + occupiedSpots + " have been deallocated.");
     }
 
     // Lida com a entrada de pagadores mensais
@@ -310,6 +351,44 @@ public class Program {
             // Caso a placa não seja válida, oferece opção para se tornar mensalista
             System.out.println("Invalid license plate! Plate not registered. ");
         }
+    }
+
+    // Aloca vagas para um veículo
+    private static void deallocateSpots(Scanner sc, ParkingSpotDao parkingSpotDao) {
+        List<ParkingSpot> unavailableSpots = parkingSpotDao.findUnavailableSpots();
+
+        // Mostra ao usuário as vagas disponíveis
+        System.out.println("Unavailable spots:");
+        for (int i = 0; i < unavailableSpots.size(); i++) {
+            System.out.print(unavailableSpots.get(i).getNumber() + " ");
+            // Coloca uma quebra de linha a cada dois números para mostrar pares de vagas
+            if ((i + 1) % 2 == 0) {
+                System.out.println();
+            }
+        }
+
+        System.out.println("\nSelect the first vacancy: ");
+        int selectedSpot = sc.nextInt();
+        sc.nextLine(); // Consumir a quebra de linha
+
+        // Verifica se a segunda vaga necessária está disponível
+        ParkingSpot firstSpot = parkingSpotDao.findByNumber(selectedSpot);
+        ParkingSpot secondSpot = parkingSpotDao.findByNumber(selectedSpot + 1);
+
+        if (firstSpot == null || secondSpot == null || !firstSpot.isOccupied() || !secondSpot.isOccupied()) {
+            System.out.println("The selected spot or its pair is not available. Please try again.");
+            return;
+        }
+
+        // Atualiza o estado das vagas como ocupadas
+        firstSpot.setOccupied(false);
+        secondSpot.setOccupied(false);
+        parkingSpotDao.update(firstSpot);
+        parkingSpotDao.update(secondSpot);
+
+        // Registra a entrada do veículo com as vagas ocupadas
+        String occupiedSpots = firstSpot.getNumber() + "/" + secondSpot.getNumber();
+        System.out.println("Exit registered successfully. Spots " + occupiedSpots + " have been deallocated.");
     }
 
     // Lida com a saida de pagadores mensais
@@ -350,9 +429,36 @@ public class Program {
         }
     }
 
+    // Aloca uma vaga para veículos que precisam de uma única vaga (moto)
+    private static void allocateSpotForSingleVehicle(Scanner sc, ParkingSpotDao parkingSpotDao) {
+
+        List<ParkingSpot> availableSpots = parkingSpotDao.findAvailableSpots();
+
+        // Mostra ao usuário as vagas disponíveis
+        System.out.println("Available spots:");
+        for (int i = 0; i < availableSpots.size(); i++) {
+            System.out.print(availableSpots.get(i).getNumber() + " ");
+            // Coloca uma quebra de linha a cada dois números para mostrar pares de vagas
+            if ((i + 1) % 2 == 0) {
+                System.out.println();
+            }
+        }
+        System.out.println("Select the vacancy:");
+        int vacancy = sc.nextInt();
+        sc.nextLine();
+
+        // Verifica se a vaga está disponível e a atualiza
+        if (isSpotAvailable(vacancy, availableSpots)) {
+            updateSpotAsOccupied(vacancy, parkingSpotDao);
+            System.out.println("Motorcycle registered in vacancy " + vacancy + ". Have a good trip!");
+        } else {
+            System.out.println("Invalid vacancy! Please choose another.");
+        }
+    }
+
     // Registra um novo pagador mensal
     private static void registerMonthlyPayer(Scanner sc, VehicleDao vehicleDao, MonthlyPayerDao monthlyPayerDao, String licensePlate) {
-        System.out.println("The monthly fee is: US$ 50.00");
+        System.out.println("The monthly fee is: US$ 250.00");
         System.out.print("Did you make the payment? Yes (Y) No (N): ");
         String paid = sc.next().toUpperCase();
         sc.nextLine();
@@ -442,9 +548,55 @@ public class Program {
         System.out.println("Entry registered successfully. Spots " + occupiedSpots + " have been allocated.");
     }
 
-    // Lida com a entrada de veículos casuais
-    private static void handleCasualExit(Scanner sc, ParkingSpotDao parkingSpotDao) {
-        deallocateSpots(sc, parkingSpotDao);
+    // Lida com a saída de veículos casuais
+    private static void handleCasualExit(Scanner sc, ParkingSpotDao parkingSpotDao, Integer exitGate, TicketDao ticketDao) {
+
+        // Solicita o ID do ticket
+        System.out.println("\nSelect the ticket id: ");
+        int id = sc.nextInt();
+        sc.nextLine(); // Consumir a quebra de linha
+
+        // Verifica se o ticket existe
+        Ticket ticket = ticketDao.findById(id);
+        if (ticket == null) {
+            System.out.println("Ticket not found. Please try again.");
+            return;
+        }
+
+        // Pega as vagas ocupadas do ticket e separa-as
+        String[] occupiedSpots = ticket.getParkingSpot().split("/");
+        int numberOfSpots = occupiedSpots.length;
+
+        // Marca as vagas como disponíveis novamente
+        for (String spotNumber : occupiedSpots) {
+            ParkingSpot spot = parkingSpotDao.findByNumber(Integer.parseInt(spotNumber));
+            if (spot != null) {
+                spot.setOccupied(false);
+                parkingSpotDao.update(spot);
+            }
+        }
+
+        // Calcula o tempo de permanência e o valor a pagar
+        LocalDateTime entryTime = ticket.getEntryHour();
+        LocalDateTime exitTime = LocalDateTime.now(); // Hora de saída atual
+        long minutesParked = java.time.Duration.between(entryTime, exitTime).toMinutes();
+
+        // Calcula o valor a pagar
+        double amount = minutesParked * 0.10;
+        if (amount < 5.0) {
+            amount = 5.0;
+        } else {
+            amount = amount * numberOfSpots; // Multiplica pelo número de vagas ocupadas
+        }
+
+        // Atualiza o ticket com a hora de saída e o valor a pagar
+        ticket.setExitHour(exitTime);
+        ticket.setAmount(amount);
+        ticket.setExitGate(exitGate);
+        ticketDao.update(ticket);
+
+        // Informa o valor a ser pago
+        System.out.printf("Exit registered successfully. The total amount to pay is: $%.2f%n", amount);
     }
 
     // Lida com a entrada de veículos casuais
@@ -495,119 +647,95 @@ public class Program {
     }
 
     // Lida com a entrada de veículos casuais
-    private static void handleCasualExitMotorcycle(Scanner sc, ParkingSpotDao parkingSpotDao) {
-        deallSpotForSingleVehicle(sc, parkingSpotDao);
+    private static void handleCasualExitMotorcycle(Scanner sc, ParkingSpotDao parkingSpotDao, TicketDao ticketDao, Integer exitGate) {
+        // Busca todas as vagas ocupadas
+
+        // Solicita o ID do ticket
+        System.out.println("\nSelect the ticket id: ");
+        int id = sc.nextInt();
+        sc.nextLine(); // Consumir a quebra de linha
+
+        // Verifica se o ticket existe
+        Ticket ticket = ticketDao.findById(id);
+        if (ticket == null) {
+            System.out.println("Ticket not found. Please try again.");
+            return;
+        }
+
+        // Pega as vagas ocupadas do ticket e separa-as
+        String[] occupiedSpots = ticket.getParkingSpot().split("/");
+        int numberOfSpots = occupiedSpots.length;
+
+        // Marca as vagas como disponíveis novamente
+        for (String spotNumber : occupiedSpots) {
+            ParkingSpot spot = parkingSpotDao.findByNumber(Integer.parseInt(spotNumber));
+            if (spot != null) {
+                spot.setOccupied(false);
+                parkingSpotDao.update(spot);
+            }
+        }
+
+        // Calcula o tempo de permanência e o valor a pagar
+        LocalDateTime entryTime = ticket.getEntryHour();
+        LocalDateTime exitTime = LocalDateTime.now(); // Hora de saída atual
+        long minutesParked = java.time.Duration.between(entryTime, exitTime).toMinutes();
+
+        // Calcula o valor a pagar
+        double amount = minutesParked * 0.10;
+        if (amount < 5.0) {
+            amount = 5.0;
+        } else {
+            amount = amount * numberOfSpots; // Multiplica pelo número de vagas ocupadas
+        }
+
+        // Atualiza o ticket com a hora de saída e o valor a pagar
+        ticket.setExitHour(exitTime);
+        ticket.setAmount(amount);
+        ticket.setExitGate(exitGate);
+        ticketDao.update(ticket);
+
+        // Informa o valor a ser pago
+        System.out.printf("Exit registered successfully. The total amount to pay is: $%.2f%n", amount);
     }
 
     // Aloca vagas para um veículo
     private static void allocateSpots(Scanner sc, ParkingSpotDao parkingSpotDao) {
         List<ParkingSpot> availableSpots = parkingSpotDao.findAvailableSpots();
 
-        // Seleção das vagas pelo usuário
-        System.out.println("Select the vacancies (select two vacancies)");
-        System.out.println(availableSpots);
-        System.out.print("Vacancy 1: ");
-        int vacancy1 = sc.nextInt();
-        System.out.print("Vacancy 2: ");
-        int vacancy2 = sc.nextInt();
-        sc.nextLine();
-
-        // Verifica se as vagas selecionadas estão disponíveis
-        if ((isSpotAvailable(vacancy1, availableSpots)) && (isSpotAvailable(vacancy2, availableSpots)) ) {
-            updateSpotAsOccupied(vacancy1, parkingSpotDao);
-            updateSpotAsOccupied(vacancy2, parkingSpotDao);
-
-            System.out.println("Vehicle registered in vacancies " + vacancy1 + " and " + vacancy2 + ". Have a good trip!\n");
-        } else {
-            System.out.println("Invalid vacancies! Please choose others.");
+        // Mostra ao usuário as vagas disponíveis
+        System.out.println("Available spots:");
+        for (int i = 0; i < availableSpots.size(); i++) {
+            System.out.print(availableSpots.get(i).getNumber() + " ");
+            // Coloca uma quebra de linha a cada dois números para mostrar pares de vagas
+            if ((i + 1) % 2 == 0) {
+                System.out.println();
+            }
         }
+
+        System.out.println("\nSelect the first vacancy: ");
+        int selectedSpot = sc.nextInt();
+        sc.nextLine(); // Consumir a quebra de linha
+
+        // Verifica se a segunda vaga necessária está disponível
+        ParkingSpot firstSpot = parkingSpotDao.findByNumber(selectedSpot);
+        ParkingSpot secondSpot = parkingSpotDao.findByNumber(selectedSpot + 1);
+
+        if (firstSpot == null || secondSpot == null || firstSpot.isOccupied() || secondSpot.isOccupied()) {
+            System.out.println("The selected spot or its pair is not available. Please try again.");
+            return;
+        }
+
+        // Atualiza o estado das vagas como ocupadas
+        firstSpot.setOccupied(true);
+        secondSpot.setOccupied(true);
+        parkingSpotDao.update(firstSpot);
+        parkingSpotDao.update(secondSpot);
+
+        // Registra a entrada do veículo com as vagas ocupadas
+        String occupiedSpots = firstSpot.getNumber() + "/" + secondSpot.getNumber();
+        System.out.println("Entry registered successfully. Spots " + occupiedSpots + " have been allocated.");
     }
 
-    // Aloca vagas para um veículo
-    private static void deallocateSpots(Scanner sc, ParkingSpotDao parkingSpotDao) {
-        List<ParkingSpot> unavailableSpots = parkingSpotDao.findUnavailableSpots();
-
-        // Seleção das vagas pelo usuário
-        System.out.println("Select the vacancies occupied (select two vacancies)");
-        System.out.println(unavailableSpots);
-        System.out.print("Vacancy 1: ");
-        int vacancy1 = sc.nextInt();
-        System.out.print("Vacancy 2: ");
-        int vacancy2 = sc.nextInt();
-        sc.nextLine();
-
-        // Verifica se as vagas selecionadas estão disponíveis
-        if ((isSpotNotAvailable(vacancy1, unavailableSpots)) && (isSpotNotAvailable(vacancy2, unavailableSpots)) ) {
-            updateSpotAsFree(vacancy1, parkingSpotDao);
-            updateSpotAsFree(vacancy2, parkingSpotDao);
-
-            System.out.println("Vehicle unregistered from vacancies " + vacancy1 + " and " + vacancy2 + ". Have a good trip!\n");
-        } else {
-            System.out.println("Invalid vacancies! Vacancies were not filled.");
-        }
-    }
-
-    // Aloca vagas para um veículo
-    private static void allocateSpotsTrucs(Scanner sc, ParkingSpotDao parkingSpotDao) {
-        List<ParkingSpot> availableSpots = parkingSpotDao.findUnavailableSpots();
-
-
-        // Seleção das vagas pelo usuário
-        System.out.println("Select the vacancies (select four vacancies)");
-        System.out.println(availableSpots);
-        System.out.print("Vacancy 1: ");
-        int vacancy1 = sc.nextInt();
-        System.out.print("Vacancy 2: ");
-        int vacancy2 = sc.nextInt();
-        System.out.print("Vacancy 3: ");
-        int vacancy3 = sc.nextInt();
-        System.out.print("Vacancy 4: ");
-        int vacancy4 = sc.nextInt();
-        sc.nextLine();
-
-        // Verifica se as vagas selecionadas estão disponíveis
-        if ((isSpotAvailable(vacancy1, availableSpots)) && (isSpotAvailable(vacancy2, availableSpots)) && (isSpotAvailable(vacancy3, availableSpots)) &&  (isSpotAvailable(vacancy4, availableSpots))) {
-            updateSpotAsFree(vacancy1, parkingSpotDao);
-            updateSpotAsFree(vacancy2, parkingSpotDao);
-            updateSpotAsFree(vacancy3, parkingSpotDao);
-            updateSpotAsFree(vacancy4, parkingSpotDao);
-
-            System.out.println("Vehicle registered in vacancies " + vacancy1 + " and " + vacancy2 + " and " + vacancy3 + " and " + vacancy4 + ". Have a good trip!\n");
-        } else {
-            System.out.println("Invalid vacancies! Please choose others.");
-        }
-    }
-
-    // Aloca vagas para um veículo
-    private static void deallSpotsTrucs(Scanner sc, ParkingSpotDao parkingSpotDao) {
-        List<ParkingSpot> unavailableSpots = parkingSpotDao.findUnavailableSpots();
-
-        // Seleção das vagas pelo usuário
-        System.out.println("Select the vacancies occupied (select four vacancies)");
-        System.out.println(unavailableSpots);
-        System.out.print("Vacancy 1: ");
-        int vacancy1 = sc.nextInt();
-        System.out.print("Vacancy 2: ");
-        int vacancy2 = sc.nextInt();
-        System.out.print("Vacancy 3: ");
-        int vacancy3 = sc.nextInt();
-        System.out.print("Vacancy 4: ");
-        int vacancy4 = sc.nextInt();
-        sc.nextLine();
-        sc.nextLine();
-
-        // Verifica se as vagas selecionadas estão disponíveis
-        if ((isSpotNotAvailable(vacancy1, unavailableSpots)) && (isSpotNotAvailable(vacancy2, unavailableSpots)) && (isSpotNotAvailable(vacancy3, unavailableSpots)) &&  (isSpotNotAvailable(vacancy4, unavailableSpots))) {
-            updateSpotAsFree(vacancy1, parkingSpotDao);
-            updateSpotAsFree(vacancy2, parkingSpotDao);
-            updateSpotAsFree(vacancy3, parkingSpotDao);
-            updateSpotAsFree(vacancy4, parkingSpotDao);
-
-            System.out.println("Vehicle registered in vacancies " + vacancy1 + " and " + vacancy2 + " and " + vacancy3 + " and " + vacancy4 + ". Have a good trip!\n");
-        } else {
-            System.out.println("Invalid vacancies! Vacancies were not filled.");
-        }
-    }
 
     // Verifica se as vagas selecionadas estão disponíveis
     private static boolean isSpotAvailable(int vacancy1, List<ParkingSpot> availableSpots) {
@@ -650,46 +778,39 @@ public class Program {
 
 
     // Aloca uma vaga para veículos que precisam de uma única vaga (moto)
-    private static void allocateSpotForSingleVehicle(Scanner sc, ParkingSpotDao parkingSpotDao) {
-        List<ParkingSpot> availableSpots = parkingSpotDao.findAvailableSpots();
-
-        System.out.println("Available spots:");
-        for (int i = 0; i < availableSpots.size(); i += 2) {
-            if (i + 1 < availableSpots.size()) {
-                System.out.println(availableSpots.get(i).getNumber() + " / " + availableSpots.get(i + 1).getNumber());
-            } else {
-                // Se houver um número ímpar de vagas, mostra a última vaga sem par
-                System.out.println(availableSpots.get(i).getNumber());
-            }
-        }
-        System.out.println("Select the vacancy:");
-        int vacancy = sc.nextInt();
-        sc.nextLine();
-
-        // Verifica se a vaga está disponível e a atualiza
-        if (isSpotAvailable(vacancy, availableSpots)) {
-            updateSpotAsOccupied(vacancy, parkingSpotDao);
-            System.out.println("Motorcycle registered in vacancy " + vacancy + ". Have a good trip!");
-        } else {
-            System.out.println("Invalid vacancy! Please choose another.");
-        }
-    }
-
-    // Aloca uma vaga para veículos que precisam de uma única vaga (moto)
     private static void deallSpotForSingleVehicle(Scanner sc, ParkingSpotDao parkingSpotDao) {
         List<ParkingSpot> unavailableSpots = parkingSpotDao.findUnavailableSpots();
 
-        System.out.println("Select the vacancy:");
-        int vacancy = sc.nextInt();
-        sc.nextLine();
-
-        // Verifica se a vaga está disponível e a atualiza
-        if (isSpotNotAvailable(vacancy, unavailableSpots)) {
-            updateSpotAsFree(vacancy, parkingSpotDao);
-            System.out.println("Motorcycle registered in vacancy " + vacancy + ". Have a good trip!");
-        } else {
-            System.out.println("Invalid vacancy! Please choose another.");
+        // Mostra ao usuário as vagas disponíveis
+        System.out.println("Unavailable spots:");
+        for (int i = 0; i < unavailableSpots.size(); i++) {
+            System.out.print(unavailableSpots.get(i).getNumber() + " ");
+            // Coloca uma quebra de linha a cada dois números para mostrar pares de vagas
+            if ((i + 1) % 2 == 0) {
+                System.out.println();
+            }
         }
+
+        System.out.println("\nSelect the first vacancy: ");
+        int selectedSpot = sc.nextInt();
+        sc.nextLine(); // Consumir a quebra de linha
+
+        // Verifica se a segunda vaga necessária está disponível
+        ParkingSpot firstSpot = parkingSpotDao.findByNumber(selectedSpot);
+
+        if (firstSpot == null || !firstSpot.isOccupied()){
+            System.out.println("The selected spot is not occupied. Please try again.");
+            return;
+        }
+
+        // Atualiza o estado das vagas como ocupadas
+        firstSpot.setOccupied(false);
+
+        parkingSpotDao.update(firstSpot);
+
+        // Registra a entrada do veículo com as vagas ocupadas
+        String occupiedSpots = firstSpot.getNumber() + "";
+        System.out.println("Exit registered successfully. Spots " + occupiedSpots + " have been deallocated.");
     }
 
     // Verifica as vagas disponíveis
@@ -729,7 +850,7 @@ public class Program {
     // Lógica para verificar a cancela de saída
     private static int checkExitGate(Scanner sc, String category) {
         while (true) {
-            System.out.println("Enter the entry gate (1 to 5):");
+            System.out.println("Enter the entry gate (6 at 10):");
             int gate = sc.nextInt();
 
             if(Objects.equals(category, "C")){
@@ -751,6 +872,8 @@ public class Program {
                 System.out.println("Invalid exit gate. Please try in other.");
             }
         }
+        
+        
     }
 
 
