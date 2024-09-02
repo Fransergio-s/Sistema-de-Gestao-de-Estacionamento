@@ -355,7 +355,7 @@ public class Program {
 
     // Aloca vagas para um veículo
     private static void deallocateSpots(Scanner sc, ParkingSpotDao parkingSpotDao) {
-        List<ParkingSpot> unavailableSpots = parkingSpotDao.findUnavailableSpots();
+        List<ParkingSpot> unavailableSpots = parkingSpotDao.findUnavailableSpotsMonthlyPayers();
 
         // Mostra ao usuário as vagas disponíveis
         System.out.println("Unavailable spots:");
@@ -432,7 +432,7 @@ public class Program {
     // Aloca uma vaga para veículos que precisam de uma única vaga (moto)
     private static void allocateSpotForSingleVehicle(Scanner sc, ParkingSpotDao parkingSpotDao) {
 
-        List<ParkingSpot> availableSpots = parkingSpotDao.findAvailableSpots();
+        List<ParkingSpot> availableSpots = parkingSpotDao.findAvailableSpotsMonthlyPayers();
 
         // Mostra ao usuário as vagas disponíveis
         System.out.println("Available spots:");
@@ -700,7 +700,7 @@ public class Program {
 
     // Aloca vagas para um veículo
     private static void allocateSpots(Scanner sc, ParkingSpotDao parkingSpotDao) {
-        List<ParkingSpot> availableSpots = parkingSpotDao.findAvailableSpots();
+        List<ParkingSpot> availableSpots = parkingSpotDao.findAvailableSpotsMonthlyPayers();
 
         // Mostra ao usuário as vagas disponíveis
         System.out.println("Available spots:");

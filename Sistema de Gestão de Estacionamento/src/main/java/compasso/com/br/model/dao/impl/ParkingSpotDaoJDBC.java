@@ -103,7 +103,7 @@ public class ParkingSpotDaoJDBC implements ParkingSpotDao {
         PreparedStatement st = null;
         ResultSet rs = null;
         try {
-            st = conn.prepareStatement("SELECT * FROM parking_spot WHERE occupied = FALSE");
+            st = conn.prepareStatement("SELECT * FROM parking_spot WHERE occupied = FALSE AND reserved = false ");
             rs = st.executeQuery();
 
             List<ParkingSpot> list = new ArrayList<>();
@@ -124,12 +124,13 @@ public class ParkingSpotDaoJDBC implements ParkingSpotDao {
         }
     }
 
+
     @Override
     public List<ParkingSpot> findUnavailableSpots() {
         PreparedStatement st = null;
         ResultSet rs = null;
         try {
-            st = conn.prepareStatement("SELECT * FROM parking_spot WHERE occupied = TRUE");
+            st = conn.prepareStatement("SELECT * FROM parking_spot WHERE occupied = TRUE AND reserved = false");
             rs = st.executeQuery();
 
             List<ParkingSpot> list = new ArrayList<>();
@@ -156,6 +157,32 @@ public class ParkingSpotDaoJDBC implements ParkingSpotDao {
         ResultSet rs = null;
         try {
             st = conn.prepareStatement("SELECT * FROM parking_spot WHERE occupied = FALSE AND reserved = TRUE");
+            rs = st.executeQuery();
+
+            List<ParkingSpot> list = new ArrayList<>();
+            while (rs.next()) {
+                ParkingSpot spot = new ParkingSpot();
+                spot.setId(rs.getInt("id"));
+                spot.setNumber(rs.getInt("number"));
+                spot.setOccupied(rs.getBoolean("occupied"));
+                spot.setReserved(rs.getBoolean("reserved"));
+                list.add(spot);
+            }
+            return list;
+        } catch (SQLException e) {
+            throw new DbException(e.getMessage());
+        } finally {
+            DB.closeStatement(st);
+            DB.closeResultSet(rs);
+        }
+    }
+
+    @Override
+    public List<ParkingSpot> findUnavailableSpotsMonthlyPayers() {
+        PreparedStatement st = null;
+        ResultSet rs = null;
+        try {
+            st = conn.prepareStatement("SELECT * FROM parking_spot WHERE occupied = true AND reserved = TRUE");
             rs = st.executeQuery();
 
             List<ParkingSpot> list = new ArrayList<>();
