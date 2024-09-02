@@ -1,5 +1,6 @@
 package compasso.com.br.application;
 
+
 import compasso.com.br.model.dao.*;
 import compasso.com.br.model.entities.MonthlyPayer;
 import compasso.com.br.model.entities.ParkingSpot;
@@ -859,8 +860,8 @@ public class Program {
                 case null, default -> System.out.println("Invalid exit gate. Please try in other.");
             }
         }
-        
-        
+
+
     }
 
 
