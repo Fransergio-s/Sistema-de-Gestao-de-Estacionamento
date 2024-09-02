@@ -9,7 +9,6 @@ import compasso.com.br.model.entities.Vehicle;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Scanner;
 
 import static compasso.com.br.model.entities.enums.Category.DeliveryTrucks;
@@ -106,11 +105,11 @@ public class Program {
         // Escolha da categoria do veículo
         switch (choiseCategory) {
             case "C":
-                handlePassengerCarExit(sc, vehicleDao, parkingSpotDao, monthlyPayerDao, exitGate, ticketDao);
+                handlePassengerCarExit(sc, parkingSpotDao, monthlyPayerDao, exitGate, ticketDao);
                 break;
 
             case "M":
-                handleMotorcycleExit(sc, vehicleDao, parkingSpotDao, monthlyPayerDao,ticketDao, exitGate);
+                handleMotorcycleExit(sc, parkingSpotDao, monthlyPayerDao,ticketDao, exitGate);
                 break;
 
             case "T":
@@ -231,7 +230,7 @@ public class Program {
     }
 
     // Função para lidar com a saida de carros de passeio
-    private static void handlePassengerCarExit(Scanner sc, VehicleDao vehicleDao, ParkingSpotDao parkingSpotDao, MonthlyPayerDao monthlyPayerDao, Integer exitGate, TicketDao ticketDao) {
+    private static void handlePassengerCarExit(Scanner sc, ParkingSpotDao parkingSpotDao, MonthlyPayerDao monthlyPayerDao, Integer exitGate, TicketDao ticketDao) {
 
         System.out.print("What type of car is yours? (Monthly Payer (M), Casual (C)): ");
         String carType = sc.next().toUpperCase();
@@ -251,7 +250,7 @@ public class Program {
 
 
     // Lida com a saida de motocicletas
-    private static void handleMotorcycleExit(Scanner sc, VehicleDao vehicleDao, ParkingSpotDao parkingSpotDao, MonthlyPayerDao monthlyPayerDao,TicketDao ticketDao, Integer exitGate) {
+    private static void handleMotorcycleExit(Scanner sc, ParkingSpotDao parkingSpotDao, MonthlyPayerDao monthlyPayerDao,TicketDao ticketDao, Integer exitGate) {
 
         System.out.print("What type of car is yours? (Monthly Payer (M), Casual (C)): ");
         String carType = sc.next().toUpperCase();
@@ -263,7 +262,7 @@ public class Program {
 
         // Lógica para pagadores mensais ou casuais
         if (carType.equals("M")) {
-            handleMonthlyPayerMotorcycleExit(sc, vehicleDao, parkingSpotDao, monthlyPayerDao);
+            handleMonthlyPayerMotorcycleExit(sc, parkingSpotDao, monthlyPayerDao);
         } else {
             handleCasualExitMotorcycle(sc, parkingSpotDao, ticketDao, exitGate);
         }
@@ -392,7 +391,7 @@ public class Program {
     }
 
     // Lida com a saida de pagadores mensais
-    private static void handleMonthlyPayerMotorcycleExit(Scanner sc, VehicleDao vehicleDao, ParkingSpotDao parkingSpotDao, MonthlyPayerDao monthlyPayerDao) {
+    private static void handleMonthlyPayerMotorcycleExit(Scanner sc, ParkingSpotDao parkingSpotDao, MonthlyPayerDao monthlyPayerDao) {
         System.out.print("Enter your license plate: ");
         String licensePlate = sc.next().toUpperCase();
         sc.nextLine(); // Consumir a quebra de linha
@@ -743,21 +742,12 @@ public class Program {
         for (ParkingSpot spot : availableSpots) {
             if (spot.getNumber() == vacancy1) {
                 isAvailable = true;
+                break;
             }
         }
         return isAvailable;
     }
 
-    // Verifica se as vagas selecionadas estão liberadas
-    private static boolean isSpotNotAvailable(int vacancy1, List<ParkingSpot> availableSpots) {
-        boolean isAvailable = true;
-        for (ParkingSpot spot : availableSpots) {
-            if (spot.getNumber() == vacancy1) {
-                isAvailable = false;
-            }
-        }
-        return isAvailable;
-    }
 
     // Atualiza o status da vaga para ocupado
     private static void updateSpotAsOccupied(int vacancy, ParkingSpotDao parkingSpotDao) {
@@ -766,15 +756,6 @@ public class Program {
         selectedSpot.setOccupied(true);
         parkingSpotDao.update(selectedSpot);
     }
-
-    // Atualiza o status da vaga para ocupado
-    private static void updateSpotAsFree(int vacancy, ParkingSpotDao parkingSpotDao) {
-        ParkingSpot selectedSpot = new ParkingSpot();
-        selectedSpot.setNumber(vacancy);
-        selectedSpot.setOccupied(false);
-        parkingSpotDao.update(selectedSpot);
-    }
-
 
 
     // Aloca uma vaga para veículos que precisam de uma única vaga (moto)
@@ -826,23 +807,26 @@ public class Program {
             System.out.println("Enter the entry gate (1 to 5):");
             int gate = sc.nextInt();
 
-            if(Objects.equals(category, "C")){
-                if (gate >= 1 && gate <= 5) {
-                    return gate; // Cancela válida
+            switch (category) {
+                case "C" -> {
+                    if (gate >= 1 && gate <= 5) {
+                        return gate; // Cancela válida
+                    }
                 }
-            } else if (Objects.equals(category, "M")) {
-                if (gate == 5) {
+                case "M" -> {
+                    if (gate == 5) {
+                        return gate;
+                    }
+                }
+                case "T" -> {
+                    if (gate == 1) {
+                        return gate;
+                    }
+                }
+                case "P" -> {
                     return gate;
                 }
-            } else if (Objects.equals(category, "T")) {
-                if (gate == 1) {
-                    return gate;
-                }
-            } else if (Objects.equals(category, "P")) {
-                return gate;
-            }
-            else {
-                System.out.println("Invalid entry gate. Please try in other.");
+                case null, default -> System.out.println("Invalid entry gate. Please try in other.");
             }
         }
     }
@@ -853,23 +837,26 @@ public class Program {
             System.out.println("Enter the entry gate (6 at 10):");
             int gate = sc.nextInt();
 
-            if(Objects.equals(category, "C")){
-                if (gate >= 6 && gate <= 10) {
-                    return gate; // Cancela válida
+            switch (category) {
+                case "C" -> {
+                    if (gate >= 6 && gate <= 10) {
+                        return gate; // Cancela válida
+                    }
                 }
-            } else if (Objects.equals(category, "M")) {
-                if (gate == 10) {
+                case "M" -> {
+                    if (gate == 10) {
+                        return gate;
+                    }
+                }
+                case "T" -> {
+                    if (gate >= 6 && gate <= 10) {
+                        return gate;
+                    }
+                }
+                case "P" -> {
                     return gate;
                 }
-            } else if (Objects.equals(category, "T")) {
-                if (gate >= 6 && gate <= 10) {
-                    return gate;
-                }
-            } else if (Objects.equals(category, "P")) {
-                return gate;
-            }
-            else {
-                System.out.println("Invalid exit gate. Please try in other.");
+                case null, default -> System.out.println("Invalid exit gate. Please try in other.");
             }
         }
         
