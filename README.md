@@ -140,5 +140,11 @@ WHERE number <= 500;
 ### Check available vacancies:
 - In this window the system will show the number of available vacancies.
 
+
+### Extras:
+- It was intended to implement the function of creating a space for a public service car and when leaving it the space would be excluded. However due to lack of time it was not possible.
+- It was intended to better handle input exceptions. However due to limited time it was not possible.
+- It was intended to improve the logic behind the monthly payments. Since a normal user can fill a monthly salary vacancy. But unfortunately it wasn't possible either.
+
 ### Em caso de alguma duvida, contate-me pelo e-mail: fransergio.morato.pb@compasso.com.br
 
